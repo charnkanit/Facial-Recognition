@@ -55,7 +55,7 @@ while True:
         id, confidence = recognizer.predict(gray[y:y+h,x:x+w])
 
         # Check if confidence is less them 100 ==> "0" is perfect match 
-        if (confidence < 100):
+        if (confidence < 45):
             id = names[id]
             confidence = "  {0}%".format(round(100 - confidence))
         else:
