@@ -136,7 +136,14 @@ class Password:
             pygame.time.wait(1000)
             self.reset()
 
-            
+    def menu(self):
+        screen.blit(BG, (0,0))
+        self.print_text("Add person",100,100,50,WHITE)
+        pygame.draw.rect(surface,WHITE_TRAN,(100,150,200,100))
+        screen.blit(surface, (0,0)) 
+        pygame.display.flip()
+
+
     def reset(self):
         global password_count
         screen.blit(BG, (0,0))
@@ -146,50 +153,50 @@ class Password:
         self.draw_numpad(NUMPAD_X,NUMPAD_Y,45)
 
 def camera_vdo(cam_posx = 0, cam_posy = 0, size = 1):
-    while True:
-        ret, img =cam.read()
-        #img = cv2.flip(img, -1) # Flip vertically
+    ret, img =cam.read()
+    #img = cv2.flip(img, -1) # Flip vertically
 
-        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
-        faces = faceCascade.detectMultiScale( 
-            gray,
-            scaleFactor = 1.2,
-            minNeighbors = 5,
-            minSize = (int(minW), int(minH)),
-        )
+    faces = faceCascade.detectMultiScale( 
+        gray,
+        scaleFactor = 1.2,
+        minNeighbors = 5,
+        minSize = (int(minW), int(minH)),
+    )
 
-        for(x,y,w,h) in faces:
+    for(x,y,w,h) in faces:
 
-            cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 2)
+        cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 2)
 
-            id, confidence = recognizer.predict(gray[y:y+h,x:x+w])
+        id, confidence = recognizer.predict(gray[y:y+h,x:x+w])
 
-            # Check if confidence is less them 100 ==> "0" is perfect match 
-            if (confidence < 55):
-                id = names[id]
-                confidence = "  {0}%".format(round(100 - confidence))
-            else:
-                id = "unknown"
-                confidence = "  {0}%".format(round(100 - confidence))
-        
-            cv2.putText(img, str(id), (x+5,y-5), font, 1, (255,255,255), 2)
-            cv2.putText(img, str(confidence), (x+5,y+h-5), font, 1, (255,255,0), 1)  
-       
-       
-        img=cv2.resize(img,(int(640 *size/100) , int(480 * size/100)), interpolation = cv2.INTER_AREA)
-        img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-        img=np.rot90(img) 
-        img=pygame.surfarray.make_surface(img)
-        img=pygame.transform.flip(img,True,False)
-        screen.blit(img, (cam_posx,cam_posy))
-        pygame.display.flip()
+        # Check if confidence is less them 100 ==> "0" is perfect match 
+        if (confidence < 55):
+            id = names[id]
+            confidence = "  {0}%".format(round(100 - confidence))
+        else:
+            id = "unknown"
+            confidence = "  {0}%".format(round(100 - confidence))
+    
+        cv2.putText(img, str(id), (x+5,y-5), font, 1, (255,255,255), 2)
+        cv2.putText(img, str(confidence), (x+5,y+h-5), font, 1, (255,255,0), 1)  
+   
+   
+    img=cv2.resize(img,(int(640 *size/100) , int(480 * size/100)), interpolation = cv2.INTER_AREA)
+    img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+    img=np.rot90(img) 
+    img=pygame.surfarray.make_surface(img)
+    img=pygame.transform.flip(img,True,False)
+    screen.blit(img, (cam_posx,cam_posy))
+    pygame.display.flip()
 
 
  
 # -------- Main Program ---------------------------------------------------------------------------
 password = Password()
-password.draw_numpad(NUMPAD_X,NUMPAD_Y,45)
+password.menu()
+#password.draw_numpad(NUMPAD_X,NUMPAD_Y,45)
 
 while run:
     for event in pygame.event.get():
@@ -198,7 +205,7 @@ while run:
             run = False 
         if event.type == pygame.MOUSEBUTTONUP:
             password.get()
-        camera_vdo(50,50,70)
+        #camera_vdo(50,50,70)
 
 pygame.quit()
 
