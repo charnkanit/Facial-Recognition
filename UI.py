@@ -198,7 +198,7 @@ while run:
             run = False 
         if event.type == pygame.MOUSEBUTTONUP:
             password.get()
-        camera_vdo(25,50,70)
+        camera_vdo(50,50,70)
 
 pygame.quit()
 
