@@ -1,6 +1,3 @@
-from pickle import TRUE
-from tokenize import String
-from turtle import Screen, position
 import numpy as np
 import random
 import pygame
@@ -23,7 +20,7 @@ BLACK = (0,0,0)
 WHITE = (255,255,255)
 WHITE_TRAN = (255,255,255,100)
 
-BG = pygame.image.load("Background1.JPG")
+BG = pygame.image.load("Background1.jpg")
 SCREEN_H = 480
 SCREEN_W = 800
 
@@ -50,7 +47,7 @@ class Password:
         self.in_pos_y = NUMPAD_Y
 
 
-    def print_text(self, text = 'null', posi_x = 0,posi_y = 0,/, size = 50, color = BLACK):
+    def print_text(self, text = 'null', posi_x = 0,posi_y = 0, size = 50, color = BLACK):
         font = pygame.font.SysFont('Font.ttf', size)
         text = font.render(str(text), True, color)
         text_center = ((posi_x - (text.get_width()/2.5)),(posi_y - (text.get_height()/2)))
@@ -128,10 +125,10 @@ class Password:
         input_password.clear()
         self.draw_numpad(NUMPAD_X,NUMPAD_Y,45)
 
-def camera_vdo():
-    image = cam.get_image()
-    screen.blit(image, (0,0))
-    pygame.display.flip()
+#def camera_vdo():
+#   image = cam.get_image()
+#  screen.blit(image, (0,0))
+# pygame.display.flip()
 
  
 # -------- Main Program ---------------------------------------------------------------------------
