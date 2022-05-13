@@ -61,7 +61,7 @@ cam.set(4, 480) # set video height 480
 minW = 0.1*cam.get(3)
 minH = 0.1*cam.get(4)
 
-# Face recognition part end here ---------------
+# Face recognition set up part end here ---------------
 class Password:
     def __init__(self):
         self.password = password
@@ -74,7 +74,7 @@ class Password:
         text = font.render(str(text), True, color)
         text_center = ((posi_x - (text.get_width()/2)),(posi_y - (text.get_height()/2)))
         screen.blit(text, text_center)
-        pygame.display.flip()
+#        pygame.display.update(pygame.Rect(posi_x,posi_y,text.get_width,text.get_height))
     
     def draw_numpad(self, in_pos_x = NUMPAD_X, in_pos_y = NUMPAD_Y, rad = 45, dis = 2):
         global state
@@ -98,10 +98,10 @@ class Password:
                             self.print_text(0, posi_x,posi_y, 50, WHITE)
                             pos_xy.append([posi_x,posi_y])
                         if t == 1 and i == 2: 
-#                            if password_count == 0:
-                            self.print_text('Cancel', posi_x, posi_y, color = WHITE, size = 35)
-#                            else:
-#                                self.print_text('del', posi_x, posi_y, color = WHITE, size = 35)
+                            if password_count == 0:
+                                self.print_text('Cancel', posi_x, posi_y, color = WHITE, size = 35)
+                            if password_count == 1:
+                                self.print_text('del', posi_x-50, posi_y, color = WHITE, size = 35)
                             pos_xy.append([posi_x,posi_y])
 
                     elif j != 3:
@@ -113,8 +113,10 @@ class Password:
                             pos_xy.append([posi_x,posi_y])
             if t == 0:
                 screen.blit(surface, (0,0)) 
-        
-        pygame.display.flip()
+
+        if password_count == 0:
+            pygame.display.flip()
+            print('flip')
 
     
     def get(self):
@@ -137,12 +139,14 @@ class Password:
                     password_count += 1
                     print((i+1)%10, password_count, input_password)
         
+        if password_count == 1:
+            self.draw_numpad()
+#            screen.blit(BG, (0,0))
+#            self.print_text('del', pos_xy[10][0], pos_xy[10][1], color = WHITE, size = 35)
         for i in range (password_count):
             self.print_text('*', self.in_pos_x + 60 + 30*i, self.in_pos_y - 30, 70, WHITE)
             
         
-        if password_count != 0:
-            self.print_text('del', pos_xy[10][0], pos_xy[10][1], color = WHITE, size = 35)
 
         if password_count == 6:
             if input_password == self.password:
