@@ -120,7 +120,7 @@ class Password:
     def get(self):
         global password_count
         global run_get
-        global pos_xy
+        
         mouse_pos = pygame.mouse.get_pos()
 
         for i in range(11):
@@ -143,6 +143,8 @@ class Password:
         
         if password_count != 0:
             self.print_text('del', pos_xy[10][0], pos_xy[10][1], color = WHITE, size = 35)
+        else:
+            self.print_text('Cancel', pos_xy[10][0], pos_xy[10][1], color = WHITE, size = 35)
 
         if password_count == 6:
             if input_password == self.password:
@@ -168,15 +170,15 @@ class Password:
         screen.blit(surface, (0,0)) 
         pygame.display.flip()
 
-        mouse_pos_menu = pygame.mouse.get_pos()
-        for i in range(2):
-            if pos_xy_menu[i][0] <= mouse_pos_menu[0] <= pos_xy_menu[i][0] + 300  and pos_xy_menu[i][1] <= mouse_pos_menu[1] <= pos_xy_menu[i][1] + 80:
-                run_menu = False
-                if i == 0:
-                    pass
-                    #self.addface()
-                if i == 1:
-                    self.draw_numpad()
+#        mouse_pos_menu = pygame.mouse.get_pos()
+#        for i in range(2):
+#            if pos_xy_menu[i][0] <= mouse_pos_menu[0] <= pos_xy_menu[i][0] + 300  and pos_xy_menu[i][1] <= mouse_pos_menu[1] <= pos_xy_menu[i][1] + 80:
+#                run_menu = False
+#                if i == 0:
+#                    pass
+#                    #self.addface()
+#                if i == 1:
+#                    self.draw_numpad()
 
 
     def reset_pin(self):
@@ -245,10 +247,10 @@ while run:
             cam.release()
             run = False 
         if event.type == pygame.MOUSEBUTTONUP:
-            if run_get:
-                password.get()
             if run_menu:
                 password.menu()
+            if run_get:
+                password.get()
         #camera_vdo(50,50,70)
 
 pygame.quit()
