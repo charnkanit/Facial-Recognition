@@ -8,8 +8,13 @@ import math
 import sys
 import os
 import numpy as np
+from pyRock.gpio import gpio
+gpio.init()
 pygame.init()
 pygame.camera.init()
+
+door = gpio.PIN04D6
+doorstate = True
 
 BLACK = (0,0,0)
 WHITE = (255,255,255)
@@ -67,6 +72,7 @@ class Password:
         self.password = password
         self.in_pos_x = NUMPAD_X
         self.in_pos_y = NUMPAD_Y
+        self.doorstate = doorstate
 
 
     def print_text(self, text = 'null', posi_x = 0,posi_y = 0, size = 50, color = BLACK):
@@ -152,6 +158,8 @@ class Password:
             if input_password == self.password:
                 self.print_text('correct', 100, 100, 50)
                 password_correct = True
+                GPIO.output(door, GPIO.LOW)
+                pygame.time.wait(5000)
                 
             else:
                 self.print_text('incorrect', 100, 100, 50)
@@ -186,6 +194,7 @@ class Password:
     def reset_pin(self):
         global password_count
         password_count = 0
+        password_correct = False
         pos_xy.clear()
         input_password.clear()
         self.draw_numpad(NUMPAD_X,NUMPAD_Y,45)
@@ -193,6 +202,7 @@ class Password:
     def reset_all(self):
         global password_count
         password_count = 0
+        password_correct = False
         pos_xy.clear()
         input_password.clear()
         self.menu()
