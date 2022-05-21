@@ -7,7 +7,8 @@ Based on original code by Anirban Kar: https://github.com/thecodacus/Face-Recogn
 Developed by Marcelo Rovai - MJRoBot.org @ 21Feb18  
 
 '''
-
+import serial
+import time
 import cv2
 import numpy as np
 import os 
@@ -25,14 +26,32 @@ id = 0
 # names related to ids: example ==> Marcelo: id=1,  etc
 names = ['None', 'Aomsin', 'Joey', 'phak', 'Bowasia', 'W'] 
 
+
+
+idx = 0
+while idx < 10:
+    cam = cv2.VideoCapture(idx)
+    if not cam.read()[0]:
+        cam.release()
+    else:
+        break
+    idx += 1
 # Initialize and start realtime video capture
-cam = cv2.VideoCapture(3)
+#cam = cv2.VideoCapture(3)
 cam.set(3, 640) # set video widht 640
 cam.set(4, 480) # set video height 480
 
 # Define min window size to be recognized as a face
 minW = 0.1*cam.get(3)
 minH = 0.1*cam.get(4)
+
+arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=9600, timeout=.1)
+
+def write_read(x):
+    arduino.write(bytes(x, encoding='utf-8'))
+    time.sleep(0.05)
+    data = arduino.readline()
+    return data
 
 while True:
 
@@ -55,12 +74,14 @@ while True:
         id, confidence = recognizer.predict(gray[y:y+h,x:x+w])
 
         # Check if confidence is less them 100 ==> "0" is perfect match 
-        if (confidence < 55):
+        if (confidence < 45):
             id = names[id]
             confidence = "  {0}%".format(round(100 - confidence))
+            value = write_read('9')
         else:
             id = "unknown"
             confidence = "  {0}%".format(round(100 - confidence))
+            value = write_read('0')
         
         cv2.putText(img, str(id), (x+5,y-5), font, 1, (255,255,255), 2)
         cv2.putText(img, str(confidence), (x+5,y+h-5), font, 1, (255,255,0), 1)  
