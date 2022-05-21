@@ -11,6 +11,7 @@ import numpy as np
 import serial
 import time
 import pandas as pd
+from PIL import Image
 
 pygame.init()
 pygame.camera.init()
@@ -44,6 +45,7 @@ run = True
 run_get = False
 run_menu = True
 run_vdo = False
+run_getuser = False
 
 pygame.display.set_caption("Numpad")
 
@@ -87,6 +89,7 @@ def getImagesAndLabels(path):
     imagePaths = [os.path.join(path, f) for f in os.listdir(path)]
     faceSamples = []
     ids = []
+    detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml");
     
     for imagePath in imagePaths:
         PIL_img = Image.open(imagePath).convert('L')
@@ -137,6 +140,7 @@ class Password:
         global run_get
         global password_count
         self.rad = rad
+        #pos_xy = []
         surface.fill((0,0,0,0))
         screen.blit(BG, (0,0))
         for t in range(2):
@@ -179,11 +183,13 @@ class Password:
         global run_get
         global pos_xy
         mouse_pos = pygame.mouse.get_pos()
+        self.print_text('Password', 250, 70, 80,WHITE)
 
         for i in range(11):
             if pos_xy[i][0] - self.rad <= mouse_pos[0] <= pos_xy[i][0] + self.rad and pos_xy[i][1] - self.rad <= mouse_pos[1] <= pos_xy[i][1] + self.rad:
                 if i == 10 and password_count != 0:
                     self.reset_pin()
+                    self.print_text('Password', 250, 70, 80,WHITE)
                  
                 elif i == 10 and password_count == 0:
                     run_get = False
@@ -196,6 +202,7 @@ class Password:
         
         if password_count == 1:
             self.draw_numpad()
+            self.print_text('Password', 250, 70, 80,WHITE)
 #            screen.blit(BG, (0,0))
 #            self.print_text('del', pos_xy[10][0], pos_xy[10][1], color = WHITE, size = 35)
         for i in range (password_count):
@@ -205,20 +212,23 @@ class Password:
 
         if password_count == 6:
             if input_password == self.password:
-#                self.print_text('correct', 100, 100, 50)
+                self.print_text('Password correct', 250, 150, 70,WHITE)
                 value = write_read('9')
                 password_correct = True
 #                pygame.time.wait(5000)
                 
             else:
-#                self.print_text('incorrect', 100, 100, 50)
+                self.print_text('Password incorrect', 250, 150, 70,WHITE)
                 value = write_read('0')
             print('reset')
             pygame.time.wait(1000)
             self.reset_pin()
+            self.print_text('Password', 250, 70, 80,WHITE)
+
 
     def menu(self):
         global run_menu 
+        global run_get
         global run_vdo
         run_menu = True
         surface.fill((0,0,0,0))
@@ -243,6 +253,7 @@ class Password:
                 if i == 1:
                     run_get = True
                     self.draw_numpad()
+                    self.print_text('Password', 250, 70, 80,WHITE)
                 if i == 2:
                     self.regist_user()
                     #self.regisat_user()
@@ -259,11 +270,12 @@ class Password:
     
     def reset_all(self):
         global password_count
+        global user_count
         #global run_vdo
         #run_vdo = False
         password_count = 0
         user_count = 0
-        input_user = []
+        input_user.clear()
         password_correct = False
         pos_xy.clear()
         input_password.clear()
@@ -271,46 +283,68 @@ class Password:
 
     def regist_user(self):
         global idx
+        global run_getuser
+        run_getuser = True
         face_id = self.getuser() # fucking number from numpad
-        count = 0
-        cam,minW, minH = act_cam(idx)
-        while(True):
-            ret, img = cam.read()
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            faces = faceCascade.detectMultiScale(gray, 1.3, 5)
+        if face_id is not None:
+            count = 0
+            cam,minW, minH = act_cam(idx)
+            while(True):
+                ret, img = cam.read()
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                faces = faceCascade.detectMultiScale(gray, 1.3, 5)
 
-            for (x,y,w,h) in faces:
-                cv2.rectangle(img, (x,y), (x+W, y+h), (255,0,0), 2)
-                count += 1
+                for (x,y,w,h) in faces:
+                    cv2.rectangle(img, (x,y), (x+w, y+h), (255,0,0), 2)
+                    count += 1
 
-                cv2.imwrite("dataset/User." + str(face_id) + '.' + str(count) + ".jpg", gray[y: y+h, x:x+w])
-                cv2.putText(img, str(count), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2 ,cv2.LINE_AA)
-                cv2. imshow('image', img)
-            if count >= 200:
-                break
-        cam.release()
-        path = 'dataset'
-        faces, ids = getImagesAndLabels(path)
-        recognizer = cv2.face.LBPHFaceRecognizer_create()
-        recognizer.train(faces, np.array(ids))
-        recognizer.save('trainer/trainer.yml')
+                    #cv2.imwrite("dataset/User." + str(face_id) + '.' + str(count) + ".jpg", gray[y: y+h, x:x+w])
+                    cv2.imwrite("dataset/User." + str(face_id) + '.' + str(count) + ".jpg", gray[y:y+h,x:x+w])
+                    cv2.putText(img, str(count), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2 ,cv2.LINE_AA)
+                    #cv2. imshow('image', img)
+                    img=cv2.resize(img,(int(640) , int(480)), interpolation = cv2.INTER_AREA)
+                    img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                    img=np.rot90(img) 
+                    img=pygame.surfarray.make_surface(img)
+                    img=pygame.transform.flip(img,True,False)
+                    screen.blit(img, (80,0))
+                    pygame.display.flip()
+                    
+                if count >= 200:
+                    break
+            cam.release()
+            print("training model")
+            surface.fill((0,0,0,0))
+            screen.blit(BG, (0,0))
+            self.print_text('Waiting for training model :)', 400, 240, 70, WHITE)
+            pygame.display.flip()
+            path = 'dataset'
+            faces, ids = getImagesAndLabels(path)
+            recognizer = cv2.face.LBPHFaceRecognizer_create()
+            recognizer.train(faces, np.array(ids))
+            recognizer.save('trainer/trainer.yml')
+            print("finish train model")
+        self.reset_all()
 
 
     def getuser(self):
         global user_count
         global run_get
         global pos_xy
+        global run_getuser
         print('getuser')
-        self.draw_numpad()
+        self.draw_numpad()  
+        self.print_text('Add user', 250, 70, 80,WHITE)
         yn_pos_x = [300,500]
         yn_pos_y = 300
         input_user.clear()
         user_count = 0
-        while True:
+        while True and run_getuser:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONUP:
 
                     mouse_pos = pygame.mouse.get_pos()
+                    print(len(pos_xy), len(mouse_pos))
 
                     for i in range(11):
                         if pos_xy[i][0] - self.rad <= mouse_pos[0] <= pos_xy[i][0] + self.rad and pos_xy[i][1] - self.rad <= mouse_pos[1] <= pos_xy[i][1] + self.rad:
@@ -318,7 +352,7 @@ class Password:
                                 self.reset_pin()
             
                             elif i == 10 and user_count == 0:
-                                run_get = False
+                                run_getuser = False
                                 self.reset_all()
 
                             else:
@@ -335,8 +369,10 @@ class Password:
                         self.print_text('Your input is ' + str(input_user[0]), 400, 150, 80, WHITE)
                         self.print_text('Yes', 300, 300, 70, WHITE)
                         self.print_text('NO', 500, 300, 70, WHITE)
-                        while True:
+                        while True and run_getuser:
+                            print(len(pygame.event.get()))
                             for event in pygame.event.get():
+                                print('a for')
                                 if event.type == pygame.MOUSEBUTTONUP:
                                     mouse_pos = pygame.mouse.get_pos()
                                     for i in range(2):
@@ -349,11 +385,13 @@ class Password:
                                                 self.print_text('waiting', 400, 240, 70, WHITE)
                                                 pygame.display.flip()
                                                 """
+                                                run_getuser = False
                                                 return input_user[0]
                                             
                                             if i == 1:
                                                 user_count = 0
                                                 input_user.clear()
+                                                pos_xy.clear()
                                                 self.getuser()
 
         return None
@@ -420,11 +458,10 @@ while run:
             run = False 
         if event.type == pygame.MOUSEBUTTONUP:
             if run_get:
-                pass
-                #password.get()
+                password.get()
             if run_menu:
                 password.menu()
- #       print(run_vdo)
+        print('eikgown')
         if run_vdo:
             cam, minW, minH = act_cam(idx)
             password.camera_vdo(50,0,100)
