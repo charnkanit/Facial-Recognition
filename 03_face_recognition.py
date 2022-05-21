@@ -27,7 +27,6 @@ id = 0
 names = ['None', 'Aomsin', 'Joey', 'phak', 'Bowasia', 'W'] 
 
 
-
 idx = 0
 while idx < 10:
     cam = cv2.VideoCapture(idx)
