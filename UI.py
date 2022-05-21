@@ -136,7 +136,6 @@ class Password:
         global state
         global run_get
         global password_count
-        run_get = True
         self.rad = rad
         surface.fill((0,0,0,0))
         screen.blit(BG, (0,0))
@@ -241,12 +240,12 @@ class Password:
                 if i == 0:
                     run_vdo = True
                     print('change state')
-
-                    
-                    #self.addface()
                 if i == 1:
+                    run_get = True
                     self.draw_numpad()
-
+                if i == 2:
+                    self.regist_user()
+                    #self.regisat_user()
 
     def reset_pin(self):
         global password_count
@@ -272,9 +271,9 @@ class Password:
 
     def regist_user(self):
         global idx
-        face_id = input('\n enter user id') # fucking number from numpad
+        face_id = self.getuser() # fucking number from numpad
         count = 0
-        #cam,minW, minH = act_cam(idx)
+        cam,minW, minH = act_cam(idx)
         while(True):
             ret, img = cam.read()
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -301,29 +300,63 @@ class Password:
         global user_count
         global run_get
         global pos_xy
-        mouse_pos = pygame.mouse.get_pos()
+        print('getuser')
+        self.draw_numpad()
+        yn_pos_x = [300,500]
+        yn_pos_y = 300
+        input_user.clear()
+        user_count = 0
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONUP:
 
-        for i in range(11):
-            if pos_xy[i][0] - self.rad <= mouse_pos[0] <= pos_xy[i][0] + self.rad and pos_xy[i][1] - self.rad <= mouse_pos[1] <= pos_xy[i][1] + self.rad:
-                if i == 10 and user_count != 0:
-                    self.reset_pin()
-                 
-                elif i == 10 and user_count == 0:
-                    run_get = False
-                    self.reset_all()
+                    mouse_pos = pygame.mouse.get_pos()
 
-                else:
-                    input_user.append((i+1)%10)
-                    user_count += 1
-                    print((i+1)%10, user_count, input_user)
-        
-        if user_count == 1:
-            self.draw_numpad()
-#            screen.blit(BG, (0,0))
-#            self.print_text('del', pos_xy[10][0], pos_xy[10][1], color = WHITE, size = 35)
-#        for i in range (password_count):
-           self.print_text(input_user, self.in_pos_x + 60 + 30*i, self.in_pos_y - 30, 70, WHITE)
+                    for i in range(11):
+                        if pos_xy[i][0] - self.rad <= mouse_pos[0] <= pos_xy[i][0] + self.rad and pos_xy[i][1] - self.rad <= mouse_pos[1] <= pos_xy[i][1] + self.rad:
+                            if i == 10 and user_count != 0:
+                                self.reset_pin()
             
+                            elif i == 10 and user_count == 0:
+                                run_get = False
+                                self.reset_all()
+
+                            else:
+                                input_user.append((i+1)%10)
+                                user_count += 1
+                                #print((i+1)%10, user_count, input_user)
+                                #print("qwqwewqewq")
+        
+                    if user_count == 1:
+                        self.print_text(str(input_user[0]), self.in_pos_x + 135, self.in_pos_y - 30, 70, WHITE)
+                        surface.fill((0,0,0,0))
+                        screen.blit(BG, (0,0))
+                        
+                        self.print_text('Your input is ' + str(input_user[0]), 400, 150, 80, WHITE)
+                        self.print_text('Yes', 300, 300, 70, WHITE)
+                        self.print_text('NO', 500, 300, 70, WHITE)
+                        while True:
+                            for event in pygame.event.get():
+                                if event.type == pygame.MOUSEBUTTONUP:
+                                    mouse_pos = pygame.mouse.get_pos()
+                                    for i in range(2):
+                                        if yn_pos_x[i] - self.rad <= mouse_pos[0] <= yn_pos_x[i] + self.rad and yn_pos_y - self.rad <= mouse_pos[1] <= yn_pos_y + self.rad:
+                                            if i == 0:
+                                                print('input(user) = ' + str(input_user[0]))
+                                                """
+                                                surface.fill((0,0,0,0))
+                                                screen.blit(BG, (0,0))
+                                                self.print_text('waiting', 400, 240, 70, WHITE)
+                                                pygame.display.flip()
+                                                """
+                                                return input_user[0]
+                                            
+                                            if i == 1:
+                                                user_count = 0
+                                                input_user.clear()
+                                                self.getuser()
+
+        return None
 
     def camera_vdo(self,cam_posx = 0, cam_posy = 0, size = 1):
         global run_vdo
@@ -387,7 +420,8 @@ while run:
             run = False 
         if event.type == pygame.MOUSEBUTTONUP:
             if run_get:
-                password.get()
+                pass
+                #password.get()
             if run_menu:
                 password.menu()
  #       print(run_vdo)
