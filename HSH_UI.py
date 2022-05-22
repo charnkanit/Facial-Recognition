@@ -8,7 +8,7 @@ import math
 import sys
 import os
 import numpy as np
-# import serial
+import serial
 import time
 import pandas as pd
 from PIL import Image
@@ -54,8 +54,10 @@ pygame.display.set_caption("Home Smart Home Security Service")
 def get_model():
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     recognizer.read('trainer/trainer.yml')
-    return recognizer, user
     user = pd.read_csv('name.csv')
+    return recognizer, user
+
+
 
 
 cascadePath = "haarcascade_frontalface_default.xml"
@@ -249,6 +251,7 @@ class Password:
 
 
     def menu(self):
+        global run
         self.run_menu = True
         surface.fill((0,0,0,0))
         pos_xy_menu = [[250,100],[250,200],[250,300]]
@@ -264,6 +267,13 @@ class Password:
 
         while self.run_menu:
             for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    try:
+                        cam.release()
+                    except:
+                        pass
+                    run = False
+                    self.run_menu = False
                 if event.type == pygame.MOUSEBUTTONUP:
                     mouse_pos_menu = pygame.mouse.get_pos()
                     for i in range(3):
@@ -279,6 +289,7 @@ class Password:
                                 self.run_add_user = True
                                 self.run_get = True
                                 self.get()
+
 
     def reset_pin(self):
         self.password_count = 0
@@ -485,14 +496,8 @@ password.menu()
 #password.draw_numpad(NUMPAD_X,NUMPAD_Y,45)
 #cam, minW, minH = act_cam(self.idx)
 while run:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            try:
-                cam.release()
-            except:
-                pass
-            run = False 
         password.menu()
+        
  
 pygame.quit()
 
