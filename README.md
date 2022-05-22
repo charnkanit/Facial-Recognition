@@ -22,7 +22,7 @@ $ python 02_face_training.py
 $ python 03_face_recognition.py
 
 # with GUI
-$ python UI.py
+$ python HSH_UI.py
 ```
 
 ## Acknowledgment
