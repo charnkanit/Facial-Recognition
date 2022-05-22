@@ -8,7 +8,7 @@ import math
 import sys
 import os
 import numpy as np
-import serial
+# import serial
 import time
 import pandas as pd
 from PIL import Image
@@ -16,7 +16,6 @@ from PIL import Image
 pygame.init()
 pygame.camera.init()
 
-doorstate = True
 
 BLACK = (0,0,0)
 WHITE = (255,255,255)
@@ -46,7 +45,7 @@ run_get = False
 run_menu = True
 run_vdo = False
 run_getuser = False
-addface = False
+run_add_user = False
 
 pygame.display.set_caption("Home Smart Home Security Service")
 
@@ -55,8 +54,8 @@ pygame.display.set_caption("Home Smart Home Security Service")
 def get_model():
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     recognizer.read('trainer/trainer.yml')
-    user = pd.read_csv('name.csv')
     return recognizer, user
+    user = pd.read_csv('name.csv')
 
 
 cascadePath = "haarcascade_frontalface_default.xml"
@@ -114,29 +113,32 @@ def act_cam(idx):
 
 
 # Face recognition set up part end here ---------------
+
 try:
     arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=9600, timeout=.1)
 except:
     arduino = serial.Serial(port='/dev/ttyUSB1', baudrate=9600, timeout=.1)
 
+
 def write_read(x):
     arduino.write(bytes(x, encoding='utf-8'))
     time.sleep(0.05)
+
 
 class Password:
     def __init__(self):
         self.password = password
         self.in_pos_x = NUMPAD_X
         self.in_pos_y = NUMPAD_Y
-        self.doorstate = doorstate
         self.run_get = run_get
         self.run_getuser = run_getuser
         self.run_menu = run_menu
         self.run_vdo = run_vdo
-        self.addface = addface
-
-    def run(self):
-        self.menu()
+        self.run_add_user = run_add_user
+        self.user_count = user_count
+        self.password_count = password_count
+        self.pos_xy = pos_xy
+        self.idx = idx
 
 
     def print_text(self, text = 'null', posi_x = 0,posi_y = 0, size = 50, color = BLACK):
@@ -147,9 +149,6 @@ class Password:
         pygame.display.flip()
     
     def draw_numpad(self, in_pos_x = NUMPAD_X, in_pos_y = NUMPAD_Y, rad = 45, dis = 2):
-        global state
-        global run_get
-        global password_count
         self.rad = rad
         surface.fill((0,0,0,0))
         screen.blit(BG, (0,0))
@@ -164,36 +163,33 @@ class Password:
                             pygame.draw.circle(surface, WHITE_TRAN, (posi_x,posi_y), rad)
                         if t == 1 and i == 1:
                             self.print_text(0, posi_x,posi_y, 50, WHITE)
-                            pos_xy.append([posi_x,posi_y])
+                            self.pos_xy.append([posi_x,posi_y])
                         if t == 1 and i == 2: 
-                            if password_count == 0:
+                            if self.password_count == 0:
                                 self.print_text('Cancel', posi_x, posi_y, color = WHITE, size = 35)
-                            if password_count == 1:
+                            if self.password_count == 1:
                                 self.print_text('del', posi_x, posi_y, color = WHITE, size = 35)
-                            pos_xy.append([posi_x,posi_y])
+                            self.pos_xy.append([posi_x,posi_y])
 
                     elif j != 3:
                         if t == 0:
                             pygame.draw.circle(surface, WHITE_TRAN, (posi_x,posi_y), rad)
                         if t == 1:
                             self.print_text(i+(j*3)+1, posi_x, posi_y, 50, WHITE)
-                            pos_xy.append([posi_x,posi_y])
+                            self.pos_xy.append([posi_x,posi_y])
             if t == 0:
                 screen.blit(surface, (0,0)) 
 
-        if password_count == 0:
+        if self.password_count == 0:
             pygame.display.flip()
-        if self.run_get or self.run_getuser is True:
+
+        if self.run_get is True:
             self.print_text('Password', 250, 70, 80,WHITE)
 
 
 
     
     def get(self):
-        global password_count
-        global run_get
-        global pos_xy
-        global addface
         self.draw_numpad()
 
         while self.run_get:
@@ -201,42 +197,38 @@ class Password:
                 if event.type == pygame.MOUSEBUTTONUP:
                     mouse_pos = pygame.mouse.get_pos()
                     for i in range(11):
-                        if pos_xy[i][0] - self.rad <= mouse_pos[0] <= pos_xy[i][0] + self.rad and pos_xy[i][1] - self.rad <= mouse_pos[1] <= pos_xy[i][1] + self.rad:
-                            if i == 10 and password_count != 0:
+                        if self.pos_xy[i][0] - self.rad <= mouse_pos[0] <= self.pos_xy[i][0] + self.rad and self.pos_xy[i][1] - self.rad <= mouse_pos[1] <= self.pos_xy[i][1] + self.rad:
+                            if i == 10 and self.password_count != 0:
                                 self.reset_pin()
                              
-                            elif i == 10 and password_count == 0:
+                            elif i == 10 and self.password_count == 0:
                                 self.run_get = False
                                 self.reset_all()
 
                             else:
                                 input_password.append((i+1)%10)
-                                password_count += 1
-                                print('password', (i+1)%10, password_count, input_password)
+                                self.password_count += 1
+                                print('password', (i+1)%10, self.password_count, input_password)
                     
-
-
-                    
-                    #print(password_count)
-                    if password_count == 1:
+                    if self.password_count == 1:
                         self.draw_numpad()
 
-                    for i in range(password_count):
+                    for i in range(self.password_count):
                         print(i)
                         self.print_text('*', self.in_pos_x + 60 + 30*i, self.in_pos_y - 30, 70, WHITE)
 
-                    if password_count == 6:
+                    if self.password_count == 6:
                         if input_password == self.password:
-                            if addface:
+                            if self.run_add_user:
                                 print('regist')
-                                addface = False
+                                self.run_add_user = False
                                 self.run_get = False
                                 self.regist_user()
                             else:
                                 self.print_text('Password correct', 250, 150, 70,WHITE)
                                 time.sleep(1)
                                 try:
-                                    value = write_read('9')
+                                    write_read('9')
                                     password_correct = True
                                     surface.fill((0,0,0,0))
                                     screen.blit(BG, (0,0))
@@ -248,19 +240,16 @@ class Password:
                         else:
                             self.print_text('Password incorrect', 250, 150, 70,WHITE)
                             try:
-                                value = write_read('0')
+                                write_read('0')
                             except:
                                 pass
+                            
                         pygame.time.wait(1000)
                         self.reset_pin()
 
 
     def menu(self):
-        global run_menu 
-        global run_get
-        global run_vdo
-        global addface
-        run_menu = True
+        self.run_menu = True
         surface.fill((0,0,0,0))
         pos_xy_menu = [[250,100],[250,200],[250,300]]
         screen.blit(BG, (0,0))
@@ -273,53 +262,48 @@ class Password:
         screen.blit(surface, (0,0)) 
         pygame.display.flip()
 
-        while run_menu:
+        while self.run_menu:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONUP:
                     mouse_pos_menu = pygame.mouse.get_pos()
                     for i in range(3):
                         if pos_xy_menu[i][0] <= mouse_pos_menu[0] <= pos_xy_menu[i][0] + 300  and pos_xy_menu[i][1] <= mouse_pos_menu[1] <= pos_xy_menu[i][1] + 80:
-                            run_menu = False
+                            self.run_menu = False
                             if i == 0:
-                                run_vdo = True
+                                self.run_vdo = True
                                 self.camera_vdo()
                             if i == 1:
                                 self.run_get = True
                                 self.get()
                             if i == 2:
-                                addface = True
+                                self.run_add_user = True
                                 self.run_get = True
                                 self.get()
 
     def reset_pin(self):
-        global password_count
-        password_count = 0
-        user_count = 0
+        self.password_count = 0
+        self.user_count = 0
         input_user = []
         password_correct = False
-        pos_xy.clear()
+        self.pos_xy.clear()
         input_password.clear()
         self.draw_numpad(NUMPAD_X,NUMPAD_Y,45)
     
     def reset_all(self):
-        global password_count
-        global user_count
-        password_count = 0
-        user_count = 0
+        self.password_count = 0
+        self.user_count = 0
         input_user.clear()
         password_correct = False
-        pos_xy.clear()
+        self.pos_xy.clear()
         input_password.clear()
         self.menu()
 
     def regist_user(self):
-        global idx
-        global run_getuser
-        run_getuser = True
+        self.run_getuser = True
         face_id = self.getuser()
         if face_id is not None:
             count = 0
-            cam,minW, minH = act_cam(idx)
+            cam,minW, minH = act_cam(self.idx)
             while(True):
                 ret, img = cam.read()
                 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -357,44 +341,37 @@ class Password:
 
 
     def getuser(self):
-        global user_count
-        #global run_get
-        global pos_xy
-        global run_getuser
-        global password_count
         print('getuser')
-        pos_xy.clear()
-        password_count = 0
+        self.pos_xy.clear()
+        self.password_count = 0
         self.draw_numpad()  
         self.print_text('Add user', 250, 70, 80,WHITE)
         yn_pos_x = [300,500]
         yn_pos_y = 300
         input_user.clear()
-        user_count = 0
-        while True and run_getuser:
-            #print(len(pos_xy))
+        self.user_count = 0
+        while True and self.run_getuser:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONUP:
 
                     mouse_pos = pygame.mouse.get_pos()
-                    print(len(pos_xy), len(mouse_pos))
+                    # print(len(self.pos_xy), len(mouse_pos))
 
                     for i in range(11):
-                        if pos_xy[i][0] - self.rad <= mouse_pos[0] <= pos_xy[i][0] + self.rad and pos_xy[i][1] - self.rad <= mouse_pos[1] <= pos_xy[i][1] + self.rad:
-                            if i == 10 and user_count != 0:
+                        if self.pos_xy[i][0] - self.rad <= mouse_pos[0] <= self.pos_xy[i][0] + self.rad and self.pos_xy[i][1] - self.rad <= mouse_pos[1] <= self.pos_xy[i][1] + self.rad:
+                            if i == 10 and self.user_count != 0:
                                 self.reset_pin()
             
-                            elif i == 10 and user_count == 0:
-                                run_getuser = False
+                            elif i == 10 and self.user_count == 0:
+                                self.run_getuser = False
                                 self.reset_all()
 
                             else:
                                 input_user.append((i+1)%10)
-                                user_count += 1
-                                #print((i+1)%10, user_count, input_user)
-                                #print("qwqwewqewq")
+                                self.user_count += 1
+                                #print((i+1)%10, self.user_count, input_user)
         
-                    if user_count == 1:
+                    if self.user_count == 1:
                         self.print_text(str(input_user[0]), self.in_pos_x + 135, self.in_pos_y - 30, 70, WHITE)
                         surface.fill((0,0,0,0))
                         screen.blit(BG, (0,0))
@@ -402,7 +379,7 @@ class Password:
                         self.print_text('Your input is ' + str(input_user[0]), 400, 150, 80, WHITE)
                         self.print_text('Yes', 300, 300, 70, WHITE)
                         self.print_text('NO', 500, 300, 70, WHITE)
-                        while True and run_getuser:
+                        while True and self.run_getuser:
                             print(len(pygame.event.get()))
                             for event in pygame.event.get():
                                 print('a for')
@@ -412,30 +389,29 @@ class Password:
                                         if yn_pos_x[i] - self.rad <= mouse_pos[0] <= yn_pos_x[i] + self.rad and yn_pos_y - self.rad <= mouse_pos[1] <= yn_pos_y + self.rad:
                                             if i == 0:
                                                 print('input(user) = ' + str(input_user[0]))
-                                                run_getuser = False
+                                                self.run_getuser = False
                                                 return input_user[0]
                                             
                                             if i == 1:
-                                                user_count = 0
+                                                self.user_count = 0
                                                 input_user.clear()
-                                                pos_xy.clear()
+                                                self.pos_xy.clear()
                                                 self.getuser()
 
         return None
 
     def camera_vdo(self,cam_posx = 0, cam_posy = 0, size = 100):
-        global run_vdo
         surface.fill((0,0,0,0))
         screen.blit(BG, (0,0))
         self.print_text('Please wait', 400, 240, 80, WHITE)
         unlock = False
-        cam, minW, minH = act_cam(idx)
+        cam, minW, minH = act_cam(self.idx)
         recognizer, user = get_model()
         names = user['Name'].tolist()
         cancel_pos_x = 750
         cancel_pos_y = 450
         self.rad = 45
-        while True and run_vdo:
+        while True and self.run_vdo:
             check = False
             ret, img =cam.read()
             gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -488,7 +464,7 @@ class Password:
                     mouse_pos = pygame.mouse.get_pos()
                     #print(mouse_pos)
                     if cancel_pos_x - self.rad <= mouse_pos[0] <= cancel_pos_x + self.rad and cancel_pos_y - self.rad <= mouse_pos[1] <= cancel_pos_y + self.rad:
-                        run_vdo = False
+                        self.run_vdo = False
                         cam.release()
                         self.reset_all()
             if unlock:
@@ -496,7 +472,7 @@ class Password:
                     screen.blit(BG, (0,0))
                     self.print_text('Unlocked', 400, 240, 80, WHITE)
                     pygame.time.wait(10000)
-                    cam,minW, minH= act_cam(idx)
+                    cam,minW, minH= act_cam(self.idx)
                     unlock = False
 
             pygame.display.flip()
@@ -507,7 +483,7 @@ class Password:
 password = Password()
 password.menu()
 #password.draw_numpad(NUMPAD_X,NUMPAD_Y,45)
-#cam, minW, minH = act_cam(idx)
+#cam, minW, minH = act_cam(self.idx)
 while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -516,7 +492,7 @@ while run:
             except:
                 pass
             run = False 
-        password.run()
+        password.menu()
  
 pygame.quit()
 
