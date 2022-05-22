@@ -2,9 +2,9 @@
 Real Time Face Recogition
 	==> Each face stored on dataset/ dir, should have a unique numeric integer ID as 1, 2, 3, etc                       
 	==> LBPH computed model (trained faces) should be on trainer/ dir
-Based on original code by Anirban Kar: https://github.com/thecodacus/Face-Recognition    
+Based on original code by Marcelo Rovai: https://github.com/Mjrovai/OpenCV-Face-Recognition
 
-Developed by Marcelo Rovai - MJRoBot.org @ 21Feb18  
+Developed by Charnkanit Kaewwong @ 22 May 2022
 
 '''
 import serial
@@ -12,6 +12,7 @@ import time
 import cv2
 import numpy as np
 import os 
+import pandas as pd
 
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 recognizer.read('trainer/trainer.yml')
@@ -24,7 +25,8 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 id = 0
 
 # names related to ids: example ==> Marcelo: id=1,  etc
-names = ['None', 'Namneung', 'Gygee', 'Bamboo', 'Bowasia', 'Toto', 'Phak'] 
+df = pd.read_csv('name.csv')
+names = df['Name'].tolist()
 
 
 idx = 0
@@ -35,8 +37,7 @@ while idx < 10:
     else:
         break
     idx += 1
-# Initialize and start realtime video capture
-#cam = cv2.VideoCapture(3)
+
 cam.set(3, 640) # set video widht 640
 cam.set(4, 480) # set video height 480
 
@@ -44,21 +45,21 @@ cam.set(4, 480) # set video height 480
 minW = 0.1*cam.get(3)
 minH = 0.1*cam.get(4)
 
-#arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=9600, timeout=.1)
+# Try to communicate to Arduino via Serial Communication from both USB0 and USB1 (if USB0 is not avaliable)
+try:
+	arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=9600, timeout=.1)
+except:
+	arduino = serial.Serial(port='/dev/ttyUSB1', baudrate=9600, timeout=.1)
 
+# function to send data to Arduino Serial
 def write_read(x):
     arduino.write(bytes(x, encoding='utf-8'))
     time.sleep(0.05)
-    data = arduino.readline()
-    return data
 
 while True:
 
     ret, img =cam.read()
-    #img = cv2.flip(img, -1) # Flip vertically
-
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-
     faces = faceCascade.detectMultiScale( 
         gray,
         scaleFactor = 1.2,
@@ -69,18 +70,16 @@ while True:
     for(x,y,w,h) in faces:
 
         cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 2)
-
         id, confidence = recognizer.predict(gray[y:y+h,x:x+w])
-
         # Check if confidence is less them 100 ==> "0" is perfect match 
         if (confidence < 45):
             id = names[id]
             confidence = "  {0}%".format(round(100 - confidence))
-            #value = write_read('9')
+            value = write_read('9')
         else:
             id = "unknown"
             confidence = "  {0}%".format(round(100 - confidence))
-            #value = write_read('0')
+            value = write_read('0')
         
         cv2.putText(img, str(id), (x+5,y-5), font, 1, (255,255,255), 2)
         cv2.putText(img, str(confidence), (x+5,y+h-5), font, 1, (255,255,0), 1)  
@@ -91,7 +90,6 @@ while True:
     if k == 27:
         break
 
-# Do a bit of cleanup
-print("\n [INFO] Exiting Program and cleanup stuff")
+print("\n [Finish!] Exiting Program")
 cam.release()
 cv2.destroyAllWindows()
