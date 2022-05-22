@@ -3,33 +3,43 @@ Capture multiple Faces from multiple users to be stored on a DataBase (dataset d
 	==> Faces will be stored on a directory: dataset/ (if does not exist, pls create one)
 	==> Each face will have a unique numeric integer ID as 1, 2, 3, etc                       
 
-Based on original code by Anirban Kar: https://github.com/thecodacus/Face-Recognition    
+Based on original code by Marcelo Rovai: https://github.com/Mjrovai/OpenCV-Face-Recognition   
 
-Developed by Marcelo Rovai - MJRoBot.org @ 21Feb18    
+Developed by Charnkanit Kaewwong @ 22 May 2022   
 
 '''
 
 import cv2
 import os
 
-cam = cv2.VideoCapture('vdo_data/PhakVDO.mp4')
+# Find and return the avaliable camera index 
+def cam_idx():
+    idx = 0
+    while idx < 5:
+        cam = cv2.VideoCapture(idx)
+        if not cam.read()[0]:
+            cam.release()
+        else:
+            cam.release()
+            return idx
+        idx += 1
+    return None
+
+idx = cam_idx()
+cam = cv2.VideoCapture(idx)
 cam.set(3, 640) # set video width
 cam.set(4, 480) # set video height
 
+# set Cascade Classifier
 face_detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-# For each person, enter one numeric face id
+# For each person, enter one numeric face ID in terminal
 face_id = input('\n enter user id end press <return> ==>  ')
 
-print("\n [INFO] Initializing face capture. Look the camera and wait ...")
-# Initialize individual sampling face count
-
-m = 0
-count = m+1
+count = 0
 while(True):
 
     ret, img = cam.read()
-    #img = cv2.flip(img, -1) # flip video image vertically
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_detector.detectMultiScale(gray, 1.3, 5)
 
@@ -38,22 +48,21 @@ while(True):
         cv2.rectangle(img, (x,y), (x+w,y+h), (255,0,0), 2)     
         count += 1
 
-        # Save the captured image into the datasets folder
+        # Save the captured image into the /datasets/
         cv2.imwrite("dataset/User." + str(face_id) + '.' + str(count) + ".jpg", gray[y:y+h,x:x+w])
         cv2.putText(img, str(count), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
         cv2.imshow('image', img)
 
-    k = cv2.waitKey(100) & 0xff # Press 'ESC' for exiting video
+    k = cv2.waitKey(100) & 0xff # Press 'ESC' to pause program from capturing face image
     if k == 27:
         while (True):
-            k = cv2.waitKey(100) & 0xff
+            k = cv2.waitKey(100) & 0xff # Press 'ESC' again to resume the program
             if k == 27:
                 break
-    elif count >= 600: # Take 30 face sample and stop video
+    elif count >= 600: # Take 600 face sample and stop video
          break
 
-# Do a bit of cleanup
-print("\n [INFO] Exiting Program and cleanup stuff")
+print("\n [Finish!] Face dataset stored in /datasets/")
 cam.release()
 cv2.destroyAllWindows()
 
