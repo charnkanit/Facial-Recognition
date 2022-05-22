@@ -24,7 +24,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 id = 0
 
 # names related to ids: example ==> Marcelo: id=1,  etc
-names = ['None', 'Aomsin', 'Joey', 'phak', 'Bowasia', 'W'] 
+names = ['None', 'Namneung', 'Gygee', 'Bamboo', 'Bowasia', 'Toto', 'Phak'] 
 
 
 idx = 0
@@ -44,7 +44,7 @@ cam.set(4, 480) # set video height 480
 minW = 0.1*cam.get(3)
 minH = 0.1*cam.get(4)
 
-arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=9600, timeout=.1)
+#arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=9600, timeout=.1)
 
 def write_read(x):
     arduino.write(bytes(x, encoding='utf-8'))
@@ -76,11 +76,11 @@ while True:
         if (confidence < 45):
             id = names[id]
             confidence = "  {0}%".format(round(100 - confidence))
-            value = write_read('9')
+            #value = write_read('9')
         else:
             id = "unknown"
             confidence = "  {0}%".format(round(100 - confidence))
-            value = write_read('0')
+            #value = write_read('0')
         
         cv2.putText(img, str(id), (x+5,y-5), font, 1, (255,255,255), 2)
         cv2.putText(img, str(confidence), (x+5,y+h-5), font, 1, (255,255,0), 1)  

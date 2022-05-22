@@ -261,11 +261,11 @@ class Password:
         surface.fill((0,0,0,0))
         pos_xy_menu = [[250,100],[250,200],[250,300]]
         screen.blit(BG, (0,0))
-        self.print_text("Face rec",400,140,50,WHITE)
+        self.print_text("Face Recognition",400,140,40,WHITE)
         pygame.draw.rect(surface,WHITE_TRAN,(250,100,300,80))
-        self.print_text("PIN",400,240,50,WHITE)
+        self.print_text("PIN Password",400,240,40,WHITE)
         pygame.draw.rect(surface,WHITE_TRAN,(250,200,300,80))
-        self.print_text("Add face",400,340,50,WHITE)
+        self.print_text("Add User",400,340,40,WHITE)
         pygame.draw.rect(surface,WHITE_TRAN,(250,300,300,80))
         screen.blit(surface, (0,0)) 
         pygame.display.flip()
@@ -455,7 +455,7 @@ class Password:
                 cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 2)
                 id, confidence = recognizer.predict(gray[y:y+h,x:x+w])
                 # Check if confidence is less them 100 ==> "0" is perfect match 
-                if (confidence < 45):
+                if (confidence < 35):
                     id = names[id]
                     confidence = "  {0}%".format(round(100 - confidence))
                     check = True

@@ -12,7 +12,7 @@ Developed by Marcelo Rovai - MJRoBot.org @ 21Feb18
 import cv2
 import os
 
-cam = cv2.VideoCapture(0)
+cam = cv2.VideoCapture('vdo_data/PhakVDO.mp4')
 cam.set(3, 640) # set video width
 cam.set(4, 480) # set video height
 
@@ -23,8 +23,9 @@ face_id = input('\n enter user id end press <return> ==>  ')
 
 print("\n [INFO] Initializing face capture. Look the camera and wait ...")
 # Initialize individual sampling face count
-count = 0
 
+m = 0
+count = m+1
 while(True):
 
     ret, img = cam.read()
@@ -44,8 +45,11 @@ while(True):
 
     k = cv2.waitKey(100) & 0xff # Press 'ESC' for exiting video
     if k == 27:
-        break
-    elif count >= 200: # Take 30 face sample and stop video
+        while (True):
+            k = cv2.waitKey(100) & 0xff
+            if k == 27:
+                break
+    elif count >= 600: # Take 30 face sample and stop video
          break
 
 # Do a bit of cleanup
