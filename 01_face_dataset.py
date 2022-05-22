@@ -11,6 +11,7 @@ Developed by Charnkanit Kaewwong @ 22 May 2022
 
 import cv2
 import os
+import pandas as pd
 
 # Find and return the avaliable camera index 
 def cam_idx():
@@ -33,10 +34,24 @@ cam.set(4, 480) # set video height
 # set Cascade Classifier
 face_detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
+
+df = pd.read_csv('name.csv')
+names = df['Name'].tolist()
 # For each person, enter one numeric face ID in terminal
-face_id = input('\n enter user id end press <return> ==>  ')
+face_id = input('\n enter user id ==>  ')
+face_name = input('\n enter user\'s name ==> ')
+
+# Save user's name to csv file
+if (len(names) > int(face_id)): # override name to exist user
+    names[int(dace_id)] = face_name
+else: 				# add new to lastest name
+    face_id = len(names) + 1
+    names.append(face_name)
+df = pd.DataFrame(names, columns=['Name'])
+df.to_csv('name.csv', index=False)
 
 count = 0
+
 while(True):
 
     ret, img = cam.read()
