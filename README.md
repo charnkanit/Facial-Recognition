@@ -13,12 +13,12 @@ $ mkdir trainer
 
 ### Requirements
 * Library list
-* 1. numpy
-* 2. opencv-python
-* 3. opencv-contrib-python
-* 4. pyserial
-* 5. pandas
-* 6. pygame
+1. numpy
+2. opencv-python
+3. opencv-contrib-python
+4. pyserial
+5. pandas
+6. pygame
 ```
 $ pip install [library name] or pip install -r requirements.txt
 ```
@@ -41,9 +41,9 @@ $ python 02_face_training.py
 
 ### Run facial recognition
 * If you are running on HSH_UI.py, you will be able to use 3 features:
-* 1. Facial recognition to control the door lock
-* 2. Pin password
-* 3. Record new user data
+1. Facial recognition to control the door lock
+2. Pin password
+3. Record new user data
 
 * If you are running on 03_face_recognition.py, you will be able to use only facial recognition to control the door lock.
 ```
