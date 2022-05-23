@@ -54,5 +54,11 @@ $ python 03_face_recognition.py
 $ python HSH_UI.py
 ```
 
+### Arduino side
+* On side of Arduino UNO R3, the program will retrieve data from Rock Pi 4B via Serial communication and control the magnetic lock using relay.
+```
+Arduino_code.ino
+```
+
 ## Acknowledgment
 [Mjrovai(OpenCV-Facial Recognition)](https://github.com/Mjrovai/OpenCV-Face-Recognition)
