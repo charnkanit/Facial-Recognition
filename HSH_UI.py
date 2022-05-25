@@ -22,11 +22,14 @@ WHITE = (255,255,255)
 WHITE_TRAN = (255,255,255,100)
 
 BG = pygame.image.load("Background1.jpg")
-SCREEN_H = 480
-SCREEN_W = 800
 
+#position of numpad
 NUMPAD_X = 500
 NUMPAD_Y = 80
+
+#setup screen dimention
+SCREEN_H = 480
+SCREEN_W = 800
 
 screen = pygame.display.set_mode((SCREEN_W, SCREEN_H), vsync=1)
 surface = pygame.Surface((SCREEN_W,SCREEN_H), pygame.SRCALPHA)
@@ -41,12 +44,13 @@ input_user = []
 
 password_correct = False
 run = True
-run_get = False
 run_menu = True
+run_get = False
 run_vdo = False
 run_getuser = False
 run_add_user = False
 
+#set UI title
 pygame.display.set_caption("Home Smart Home Security Service")
 
 # Face recognition set up part start here ---------------
@@ -56,8 +60,6 @@ def get_model():
     recognizer.read('trainer/trainer.yml')
     user = pd.read_csv('name.csv')
     return recognizer, user
-
-
 
 
 cascadePath = "haarcascade_frontalface_default.xml"
@@ -126,8 +128,9 @@ def write_read(x):
     arduino.write(bytes(x, encoding='utf-8'))
     time.sleep(0.05)
 
+#UI
 
-class Password:
+class UI:
     def __init__(self):
         self.password = password
         self.in_pos_x = NUMPAD_X
@@ -142,14 +145,15 @@ class Password:
         self.pos_xy = pos_xy
         self.idx = idx
 
-
+#function for show the string
     def print_text(self, text = 'null', posi_x = 0,posi_y = 0, size = 50, color = BLACK):
         font = pygame.font.SysFont('Font.ttf', size)
         text = font.render(str(text), True, color)
         text_center = ((posi_x - (text.get_width()/2)),(posi_y - (text.get_height()/2)))
         screen.blit(text, text_center)
         pygame.display.flip()
-    
+
+#draw the numpad
     def draw_numpad(self, in_pos_x = NUMPAD_X, in_pos_y = NUMPAD_Y, rad = 45, dis = 2):
         self.rad = rad
         surface.fill((0,0,0,0))
@@ -189,7 +193,7 @@ class Password:
             self.print_text('Password', 250, 70, 80,WHITE)
 
 
-
+#get the value from numpad
     
     def get(self):
         self.draw_numpad()
@@ -249,7 +253,7 @@ class Password:
                         pygame.time.wait(1000)
                         self.reset_pin()
 
-
+#main menu screen
     def menu(self):
         global run
         self.run_menu = True
@@ -290,7 +294,7 @@ class Password:
                                 self.run_get = True
                                 self.get()
 
-
+#reset the value and call pin password
     def reset_pin(self):
         self.password_count = 0
         self.user_count = 0
@@ -299,7 +303,8 @@ class Password:
         self.pos_xy.clear()
         input_password.clear()
         self.draw_numpad(NUMPAD_X,NUMPAD_Y,45)
-    
+        
+# reset all value and back to main menu
     def reset_all(self):
         self.password_count = 0
         self.user_count = 0
@@ -309,6 +314,7 @@ class Password:
         input_password.clear()
         self.menu()
 
+# register user in the face recognition 
     def regist_user(self):
         self.run_getuser = True
         face_id = self.getuser()
@@ -350,7 +356,7 @@ class Password:
             print("finish train model")
         self.reset_all()
 
-
+#get the value to define personality of users
     def getuser(self):
         print('getuser')
         self.pos_xy.clear()
@@ -411,6 +417,7 @@ class Password:
 
         return None
 
+# Camera UI
     def camera_vdo(self,cam_posx = 0, cam_posy = 0, size = 100):
         surface.fill((0,0,0,0))
         screen.blit(BG, (0,0))
@@ -491,12 +498,12 @@ class Password:
 
  
 # -------- Main Program ---------------------------------------------------------------------------
-password = Password()
-password.menu()
+UI = UI()
+UI.menu()
 #password.draw_numpad(NUMPAD_X,NUMPAD_Y,45)
 #cam, minW, minH = act_cam(self.idx)
 while run:
-        password.menu()
+        UI.menu()
         
  
 pygame.quit()
